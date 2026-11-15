@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Samika — Мобільна версія</title>
+    <style>
+        /* ===== RESET ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #f0f0f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        /* ===== TRANSITION OVERLAY ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: #0a0a0a;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.55s cubic-bezier(.4,0,.2,1);
+        }
+        .overlay.hidden { opacity: 0; }
+
+        /* ===== PHONE FRAME (десктоп-превʼю) ===== */
+        @media (min-width: 600px) {
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: #050505;
+                padding: 40px 20px;
+            }
+
+            .desktop-hint {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 13px;
+                color: #555;
+                margin-bottom: 24px;
+                letter-spacing: 0.04em;
+            }
+
+            .desktop-hint a {
+                color: #888;
+                border-bottom: 1px solid #333;
+                padding-bottom: 1px;
+                transition: color 0.2s;
+            }
+
+            .desktop-hint a:hover { color: #fff; }
+
+            .phone-frame {
+                width: 390px;
+                min-height: 844px;
+                background: #0a0a0a;
+                border-radius: 48px;
+                border: 2px solid #2a2a2a;
+                box-shadow:
+                    0 0 0 6px #111,
+                    0 0 0 8px #222,
+                    0 40px 80px rgba(0,0,0,0.8);
+                overflow: hidden;
+                position: relative;
+            }
+
+            /* Динамічний острівець */
+            .phone-frame::before {
+                content: '';
+                position: absolute;
+                top: 14px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 120px;
+                height: 34px;
+                background: #000;
+                border-radius: 20px;
+                z-index: 50;
+            }
+
+            /* Кнопки гучності */
+            .phone-frame::after {
+                content: '';
+                position: absolute;
+                top: 120px;
+                left: -4px;
+                width: 4px;
+                height: 60px;
+                background: #222;
+                border-radius: 2px 0 0 2px;
+                box-shadow: 0 -72px 0 #222, 0 72px 0 #222;
+            }
+        }
+
+        @media (max-width: 599px) {
+            .desktop-hint { display: none; }
+            .phone-frame {
+                width: 100%;
+                min-height: 100vh;
+            }
+        }
+
+        /* ===== INNER CONTENT ===== */
+        .mobile-inner {
+            width: 100%;
+            padding-top: 60px; /* місце для dynamic island на десктопі */
+        }
+
+        @media (max-width: 599px) {
+            .mobile-inner { padding-top: 0; }
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            background: rgba(10,10,10,0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1e1e1e;
+            z-index: 10;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .top-bar .logo img {
+            height: 32px;
+            width: auto;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .top-icon {
+            background: none;
+            border: 1px solid #2a2a2a;
+            color: #f0f0f0;
+            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Back to desktop */
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #aaa;
+            border: 1px solid #2a2a2a;
+            border-radius: 20px;
+            padding: 6px 12px;
+            cursor: pointer;
+            background: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        /* ===== HERO BANNER ===== */
+        .mobile-hero {
+            position: relative;
+            overflow: hidden;
+            height: 240px;
+        }
+
+        .mobile-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .mobile-hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, #0a0a0a 100%);
+        }
+
+        .mobile-hero-text {
+            position: absolute;
+            bottom: 20px;
+            left: 16px;
+        }
+
+        .mobile-hero-text h1 {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+
+        .mobile-hero-text p {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        /* ===== CATEGORY TABS ===== */
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 16px 16px 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .category-tabs::-webkit-scrollbar { display: none; }
+
+        .cat-tab {
+            flex-shrink: 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #aaa;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .cat-tab.active,
+        .cat-tab:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        /* ===== SECTION TITLE ===== */
+        .mobile-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #666;
+            padding: 20px 16px 12px;
+        }
+
+        /* ===== PRODUCT LIST ===== */
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            padding: 0 16px;
+        }
+
+        .m-product-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #111;
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #1e1e1e;
+            transition: background 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .m-product-card:active {
+            background: #161616;
+        }
+
+        .m-product-card:hover {
+            border-color: #333;
+        }
+
+        .m-product-img {
+            width: 72px;
+            height: 72px;
+            border-radius: 10px;
+            background: #1a1a1a;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .m-product-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 6px;
+        }
+
+        .m-product-info {
+            flex: 1;
+        }
+
+        .m-product-info h4 {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #ddd;
+            text-transform: uppercase;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .m-product-price {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .m-buy-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .m-buy-btn:active {
+            transform: scale(0.95);
+            background: #e0e0e0;
+        }
+
+        /* ===== HORIZONTAL SCROLL CARDS ===== */
+        .cards-scroll {
+            display: flex;
+            gap: 12px;
+            padding: 0 16px 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .cards-scroll::-webkit-scrollbar { display: none; }
+
+        .scroll-card {
+            flex-shrink: 0;
+            width: 150px;
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .scroll-card:active { transform: scale(0.97); }
+
+        .scroll-card-img {
+            width: 100%;
+            height: 150px;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .scroll-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+
+        .scroll-card-body {
+            padding: 10px;
+        }
+
+        .scroll-card-body h4 {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #ccc;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .scroll-card-body .price {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <!-- Анімація входу -->
+    <div class="overlay" id="pageOverlay"></div>
+
+    <!-- Підказка на десктопі -->
+    <div class="desktop-hint">
+        <span>🖥️ Перегляд мобільної версії</span>
+        <a href="index.html" onclick="goBack(event, 'index.html')">← Повернутись на сайт</a>
+    </div>
+
+    <!-- Телефонна рамка (тільки на десктопі) -->
+    <div class="phone-frame">
+        <div class="mobile-inner">
+
+            <!-- TOP BAR -->
+            <div class="top-bar">
+                <a class="logo" href="index.html" onclick="goBack(event, 'index.html')">
+                    <img src="images/ChatGPT Image 5 трав. 2026 р., 14_08_14 1.png" alt="Samika">
+                </a>
+                <div class="top-bar-actions">
+                    <button class="back-btn" onclick="goBack(event, 'index.html')">
+                        🖥 Десктоп
+                    </button>
+                    <button class="top-icon">🛒</button>
+                </div>
+            </div>
+
+            <!-- HERO -->
+            <div class="mobile-hero">
+                <img src="images/unnamed 1.png" alt="Hero">
+                <div class="mobile-hero-overlay"></div>
+                <div class="mobile-hero-text">
+                    <h1>Нова<br>колекція</h1>
+                    <p>Весна — Літо 2026</p>
+                </div>
+            </div>
+
+            <!-- CATEGORY TABS -->
+            <div class="category-tabs">
+                <button class="cat-tab active">Всі</button>
+                <button class="cat-tab" onclick="goTo('mobile-kofty.html')">Кофти</button>
+                <button class="cat-tab" onclick="goTo('mobile-futbolki.html')">Футболки</button>
+                <button class="cat-tab" onclick="goTo('mobile-asistt.html')">Куртки</button>
+                <button class="cat-tab">Новинки</button>
+            </div>
+
+            <!-- HORIZONTAL SCROLL — Новинки -->
+            <div class="mobile-section-title">Новинки</div>
+            <div class="cards-scroll">
+                <div class="scroll-card">
+                    <div class="scroll-card-img">
+                        <img src="images/upscalemedia-transformed (2) 1.png" alt="YOUTH BASIC HOODIE">
+                    </div>
+                    <div class="scroll-card-body">
+                        <h4>Youth Basic Hoodie</h4>
+                        <span class="price">65$</span>
+                    </div>
+                </div>
+                <div class="scroll-card">
+                    <div class="scroll-card-img">
+                        <img src="images/upscalemedia-transformed (3) 1.png" alt="YOUTH BASIC SWEATER">
+                    </div>
+                    <div class="scroll-card-body">
+                        <h4>Youth Basic Sweater</h4>
+                        <span class="price">55$</span>
+                    </div>
+                </div>
+                <div class="scroll-card">
+                    <div class="scroll-card-img">
+                        <img src="images/upscalemedia-transformed (6) 1.png" alt="WTAPS MA-1">
+                    </div>
+                    <div class="scroll-card-body">
+                        <h4>WTAPS MA-1 Bomber</h4>
+                        <span class="price">580$</span>
+                    </div>
+                </div>
+                <div class="scroll-card">
+                    <div class="scroll-card-img">
+                        <img src="images/upscalemedia-transformed (7) 1.png" alt="Gradient Flight">
+                    </div>
+                    <div class="scroll-card-body">
+                        <h4>Gradient Flight Jacket</h4>
+                        <span class="price">275$</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRODUCT LIST -->
+            <div class="mobile-section-title">Всі товари</div>
+            <div class="product-list">
+
+                <div class="m-product-card">
+                    <div class="m-product-img">
+                        <img src="images/upscalemedia-transformed (1) 1.png" alt="YOUTH BASIC TEE">
+                    </div>
+                    <div class="m-product-info">
+                        <h4>Youth Basic Tee</h4>
+                        <span class="m-product-price">20$</span>
+                    </div>
+                    <button class="m-buy-btn">Купити</button>
+                </div>
+
+                <div class="m-product-card">
+                    <div class="m-product-img">
+                        <img src="images/desert-rose-t-shirt-t-shirt-black-xs-252405_1500x1500-removebg-preview 1.png" alt="DESERT ROSE">
+                    </div>
+                    <div class="m-product-info">
+                        <h4>Desert Rose T-Shirt</h4>
+                        <span class="m-product-price">60$</span>
+                    </div>
+                    <button class="m-buy-btn">Купити</button>
+                </div>
+
+                <div class="m-product-card">
+                    <div class="m-product-img">
+                        <img src="images/acid-logo-t-shirt-t-shirt-black-xs-512725_1500x1500-removebg-preview 1.png" alt="ACID LOGO">
+                    </div>
+                    <div class="m-product-info">
+                        <h4>Acid Logo T-Shirt</h4>
+                        <span class="m-product-price">45$</span>
+                    </div>
+                    <button class="m-buy-btn">Купити</button>
+                </div>
+
+                <div class="m-product-card">
+                    <div class="m-product-img">
+                        <img src="images/heatwave-t-shirt-t-shirt-white-xs-333242_1500x1500-removebg-preview 1.png" alt="HEATWAVE">
+                    </div>
+                    <div class="m-product-info">
+                        <h4>Heatwave T-Shirt</h4>
+                        <span class="m-product-price">80$</span>
+                    </div>
+                    <button class="m-buy-btn">Купити</button>
+                </div>
+
+                <div class="m-product-card">
+                    <div class="m-product-img">
+                        <img src="images/ma-1-bomber-jacket-slim-fit-outerwear-cedar-red-xs-258670_1500x1500-removebg-preview 1.png" alt="MA-1 SQUADRON">
+                    </div>
+                    <div class="m-product-info">
+                        <h4>MA-1 Squadron Bomber</h4>
+                        <span class="m-product-price">135$</span>
+                    </div>
+                    <button class="m-buy-btn">Купити</button>
+                </div>
+
+                <div class="m-product-card">
+                    <div class="m-product-img">
+                        <img src="images/upscalemedia-transformed (5) 1.png" alt="MA-1 BOMBER YOUTH">
+                    </div>
+                    <div class="m-product-info">
+                        <h4>MA-1 Bomber Youth</h4>
+                        <span class="m-product-price">100$</span>
+                    </div>
+                    <button class="m-buy-btn">Купити</button>
+                </div>
+
+                <div class="m-product-card">
+                    <div class="m-product-img">
+                        <img src="images/upscalemedia-transformed (4) 1.png" alt="NASA MA-1">
+                    </div>
+                    <div class="m-product-info">
+                        <h4>NASA MA-1 Bomber Youth</h4>
+                        <span class="m-product-price">110$</span>
+                    </div>
+                    <button class="m-buy-btn">Купити</button>
+                </div>
+
+                <div class="m-product-card">
+                    <div class="m-product-img">
+                        <img src="images/basic-small-logo-t-shirt-camo-t-shirt-olive-camo-xs-611050_1500x1500-removebg-preview 1.png" alt="BASIC CAMO">
+                    </div>
+                    <div class="m-product-info">
+                        <h4>Basic Small Logo Camo</h4>
+                        <span class="m-product-price">30$</span>
+                    </div>
+                    <button class="m-buy-btn">Купити</button>
+                </div>
+
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <script>
+        // ===== FADE IN при відкритті =====
+        window.addEventListener('load', () => {
+            const overlay = document.getElementById('pageOverlay');
+            requestAnimationFrame(() => {
+                overlay.classList.add('hidden');
+                setTimeout(() => { overlay.style.display = 'none'; }, 600);
+            });
+        });
+
+        // ===== Перехід назад на десктоп =====
+        function goBack(e, url) {
+            if (e) e.preventDefault();
+            const overlay = document.getElementById('pageOverlay');
+            overlay.style.display = 'block';
+            overlay.style.opacity = '0';
+            overlay.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                overlay.style.transition = 'opacity 0.4s ease';
+                overlay.style.opacity = '1';
+            });
+            setTimeout(() => { window.location.href = url; }, 450);
+        }
+
+        // ===== Перехід по категоріях =====
+        function goTo(url) {
+            const overlay = document.getElementById('pageOverlay');
+            overlay.style.display = 'block';
+            overlay.style.opacity = '0';
+            overlay.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                overlay.style.transition = 'opacity 0.4s ease';
+                overlay.style.opacity = '1';
+            });
+            setTimeout(() => { window.location.href = url; }, 450);
+        }
+
+        // ===== Bottom nav =====
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

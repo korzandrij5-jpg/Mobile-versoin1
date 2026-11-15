@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Футболки — Samika Mobile</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #f0f0f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: #0a0a0a;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.55s cubic-bezier(.4,0,.2,1);
+        }
+        .overlay.hidden { opacity: 0; }
+
+        @media (min-width: 600px) {
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: #050505;
+                padding: 40px 20px;
+            }
+            .desktop-hint {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 13px;
+                color: #555;
+                margin-bottom: 24px;
+                letter-spacing: 0.04em;
+            }
+            .desktop-hint a {
+                color: #888;
+                border-bottom: 1px solid #333;
+                padding-bottom: 1px;
+                transition: color 0.2s;
+            }
+            .desktop-hint a:hover { color: #fff; }
+            .phone-frame {
+                width: 390px;
+                min-height: 844px;
+                background: #0a0a0a;
+                border-radius: 48px;
+                border: 2px solid #2a2a2a;
+                box-shadow:
+                    0 0 0 6px #111,
+                    0 0 0 8px #222,
+                    0 40px 80px rgba(0,0,0,0.8);
+                overflow: hidden;
+                position: relative;
+            }
+            .phone-frame::before {
+                content: '';
+                position: absolute;
+                top: 14px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 120px;
+                height: 34px;
+                background: #000;
+                border-radius: 20px;
+                z-index: 50;
+            }
+            .phone-frame::after {
+                content: '';
+                position: absolute;
+                top: 120px;
+                left: -4px;
+                width: 4px;
+                height: 60px;
+                background: #222;
+                border-radius: 2px 0 0 2px;
+                box-shadow: 0 -72px 0 #222, 0 72px 0 #222;
+            }
+        }
+        @media (max-width: 599px) {
+            .desktop-hint { display: none; }
+            .phone-frame { width: 100%; min-height: 100vh; }
+        }
+
+        .mobile-inner {
+            width: 100%;
+            padding-top: 60px;
+        }
+        @media (max-width: 599px) {
+            .mobile-inner { padding-top: 0; }
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            background: rgba(10,10,10,0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1e1e1e;
+            z-index: 10;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .back-arrow {
+            background: none;
+            border: 1px solid #2a2a2a;
+            color: #f0f0f0;
+            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: border-color 0.2s;
+        }
+        .back-arrow:hover { border-color: #555; }
+        .top-bar-title {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .top-icon {
+            background: none;
+            border: 1px solid #2a2a2a;
+            color: #f0f0f0;
+            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* CATEGORY TABS */
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 16px 16px 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .category-tabs::-webkit-scrollbar { display: none; }
+        .cat-tab {
+            flex-shrink: 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #aaa;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        .cat-tab.active,
+        .cat-tab:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        /* SECTION TITLE */
+        .mobile-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #666;
+            padding: 20px 16px 12px;
+        }
+
+        /* PRODUCT GRID */
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 0 16px;
+        }
+        .m-grid-card {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .m-grid-card:active { transform: scale(0.97); }
+        .m-grid-card:hover { border-color: #333; }
+        .m-grid-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+        .m-grid-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 12px;
+        }
+        .m-grid-body {
+            padding: 10px;
+        }
+        .m-grid-body h4 {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #ccc;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        .m-grid-body .price {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .m-grid-btn {
+            width: 100%;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 7px 0;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .m-grid-btn:active { background: #e0e0e0; }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="pageOverlay"></div>
+
+    <div class="desktop-hint">
+        <span>🖥️ Перегляд мобільної версії</span>
+        <a href="futbolki.html" onclick="goTo(event, 'futbolki.html')">← Десктопна версія</a>
+    </div>
+
+    <div class="phone-frame">
+        <div class="mobile-inner">
+
+            <!-- TOP BAR -->
+            <div class="top-bar">
+                <button class="back-arrow" onclick="goTo(event, 'mobile.html')">←</button>
+                <span class="top-bar-title">Футболки</span>
+                <button class="top-icon">🛒</button>
+            </div>
+
+            <!-- CATEGORY TABS -->
+            <div class="category-tabs">
+                <button class="cat-tab" onclick="goTo(event, 'mobile.html')">Всі</button>
+                <button class="cat-tab active">Футболки</button>
+                <button class="cat-tab" onclick="goTo(event, 'mobile-asistt.html')">Куртки</button>
+                <button class="cat-tab">Новинки</button>
+            </div>
+
+            <div class="mobile-section-title">Всі футболки</div>
+
+            <div class="product-grid">
+
+                <div class="m-grid-card">
+                    <div class="m-grid-img">
+                        <img src="images/upscalemedia-transformed 1.png" alt="YOUTH BASIC TEE">
+                    </div>
+                    <div class="m-grid-body">
+                        <h4>Youth Basic Tee</h4>
+                        <span class="price">20$</span>
+                        <button class="m-grid-btn">Купити</button>
+                    </div>
+                </div>
+
+                <div class="m-grid-card">
+                    <div class="m-grid-img">
+                        <img src="images/desert-rose-t-shirt-t-shirt-black-xs-252405_1500x1500-removebg-preview 1.png" alt="DESERT ROSE">
+                    </div>
+                    <div class="m-grid-body">
+                        <h4>Desert Rose T-Shirt</h4>
+                        <span class="price">60$</span>
+                        <button class="m-grid-btn">Купити</button>
+                    </div>
+                </div>
+
+                <div class="m-grid-card">
+                    <div class="m-grid-img">
+                        <img src="images/desert-t-shirt-t-shirt-black-xs-381358_1500x1500-removebg-preview 1 (1).png" alt="DESERT T-SHIRT">
+                    </div>
+                    <div class="m-grid-body">
+                        <h4>Desert T-Shirt</h4>
+                        <span class="price">80$</span>
+                        <button class="m-grid-btn">Купити</button>
+                    </div>
+                </div>
+
+                <div class="m-grid-card">
+                    <div class="m-grid-img">
+                        <img src="images/acid-logo-t-shirt-t-shirt-black-xs-512725_1500x1500-removebg-preview 1.png" alt="ACID LOGO">
+                    </div>
+                    <div class="m-grid-body">
+                        <h4>Acid Logo T-Shirt</h4>
+                        <span class="price">45$</span>
+                        <button class="m-grid-btn">Купити</button>
+                    </div>
+                </div>
+
+                <div class="m-grid-card">
+                    <div class="m-grid-img">
+                        <img src="images/heatwave-t-shirt-t-shirt-white-xs-333242_1500x1500-removebg-preview 1.png" alt="HEATWAVE">
+                    </div>
+                    <div class="m-grid-body">
+                        <h4>Heatwave T-Shirt</h4>
+                        <span class="price">80$</span>
+                        <button class="m-grid-btn">Купити</button>
+                    </div>
+                </div>
+
+                <div class="m-grid-card">
+                    <div class="m-grid-img">
+                        <img src="images/basic-small-logo-t-shirt-camo-t-shirt-olive-camo-xs-611050_1500x1500-removebg-preview 1.png" alt="BASIC CAMO">
+                    </div>
+                    <div class="m-grid-body">
+                        <h4>Basic Small Logo Camo</h4>
+                        <span class="price">30$</span>
+                        <button class="m-grid-btn">Купити</button>
+                    </div>
+                </div>
+
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const overlay = document.getElementById('pageOverlay');
+            requestAnimationFrame(() => {
+                overlay.classList.add('hidden');
+                setTimeout(() => { overlay.style.display = 'none'; }, 600);
+            });
+        });
+
+        function goTo(e, url) {
+            if (e) e.preventDefault();
+            const overlay = document.getElementById('pageOverlay');
+            overlay.style.display = 'block';
+            overlay.style.opacity = '0';
+            overlay.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                overlay.style.transition = 'opacity 0.4s ease';
+                overlay.style.opacity = '1';
+            });
+            setTimeout(() => { window.location.href = url; }, 450);
+        }
+
+
+    </script>
+</body>
+</html>
